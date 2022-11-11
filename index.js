@@ -5,10 +5,24 @@ const PORT = process.env.PORT
 const mongoose = require('mongoose')
 const Course = require('./models/course')
 const cors = require("cors")
+const passport = require('./passport')
+
 
 
 app.use(cors())
 app.use(express.json())
+app.use(passport.initialize())
+
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile'] }));
+
+
+app.get('/auth/google/callback', 
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  function(req, res) {
+    // Successful authentication, redirect home.
+    res.redirect('/');
+  });
 
 
 
