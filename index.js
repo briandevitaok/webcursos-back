@@ -24,19 +24,25 @@ app.get(
   passport.authenticate('google', { scope: ['profile'] })
 );
 
-app.get('/auth/google/callback', function (req, res) {
-  const { _id, firstname, lastname, email, pictureUrl } = req.user;
-  const userData = {
-    _id,
-    firstname,
-    lastname,
-    email,
-    pictureUrl,
-  };
-  const jwt = genereteJWT(userData);
-  const login_info = JSON.stringify({ jwt, user: userData });
-  res.redirect(`http://localhost:3000/profile?login_info=${login_info}`);
-});
+app.get(
+  '/auth/google/callback',
+  passport.authenticate('google', {
+    failureRedirect: 'http:localhost:3000/login',
+  }),
+  function (req, res) {
+    const { _id, firstname, lastname, email, pictureUrl } = req.user;
+    const userData = {
+      _id,
+      firstname,
+      lastname,
+      email,
+      pictureUrl,
+    };
+    const jwt = genereteJWT(userData);
+    const login_info = JSON.stringify({ jwt, user: userData });
+    res.redirect(`http://localhost:3000/profile?login_info=${login_info}`);
+  }
+);
 
 app.get('/', (req, res) => {
   res.send('Hello World');
@@ -44,7 +50,7 @@ app.get('/', (req, res) => {
 
 app.get(
   '/courses',
-  passport.authenticate('jwt', { session: false }),
+
   async (req, res) => {
     try {
       const courses = await Course.find();
