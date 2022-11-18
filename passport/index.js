@@ -9,6 +9,7 @@ const jwtExtractor = function (req) {
   if (req && req.headers['authorization']) {
     token = req.headers['authorization'].split(' ')[1];
   }
+  console.log({token})
   return token;
 };
 
@@ -16,9 +17,8 @@ passport.use(
   new JwtStrategy(
     { jwtFromRequest: jwtExtractor, secretOrKey: process.env.JWT_SECRET_KEY },
     async function (jwt_payload, done) {
-      console.log({ jwt_payload });
       try {
-        const foundUser = await User.findOne({ id: jwt_payload.sub });
+        const foundUser = await User.findOne({ _id: jwt_payload.sub});
         done(null, foundUser);
       } catch (error) {
         done(error, null);
@@ -61,7 +61,6 @@ passport.use(
 );
 
 passport.serializeUser(function (user, done) {
-  console.log('serializeUser');
   done(null, user._id);
 });
 

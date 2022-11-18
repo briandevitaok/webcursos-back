@@ -7,6 +7,7 @@ const Course = require('./models/course');
 const cors = require('cors');
 const passport = require('./passport');
 const genereteJWT = require('./helpers/genereteJWT');
+const Sale = require('./models/sales');
 
 app.use(cors());
 app.use(express.json());
@@ -18,7 +19,6 @@ app.use(
     saveUninitialized: true,
   })
 );
-
 
 app.get(
   '/auth/google',
@@ -49,36 +49,45 @@ app.get('/', (req, res) => {
   res.send('Hello World');
 });
 
-app.get(
-  '/courses',
-  async (req, res) => {
-    try {
-      const courses = await Course.find();
-      res.status(200).json({ ok: true, data: courses });
-    } catch (error) {
-      console.log({ error });
-      res.status(400).json({ ok: false, error });
-    }
+app.get('/courses', async (req, res) => {
+  try {
+    const courses = await Course.find();
+    res.status(200).json({ ok: true, data: courses });
+  } catch (error) {
+    console.log({ error });
+    res.status(400).json({ ok: false, error });
   }
-);
+});
 
-
-app.get(
-  '/courses/:id',
-  async (req, res) => {
-    const {id} = req.params
-    console.log({id})
-    try {
-      const course = await Course.findById(id);
-      res.status(200).json({ ok: true, data: course });
-    } catch (error) {
-      console.log({ error });
-      res.status(400).json({ ok: false, error });
+app.get('/courses/:id', async (req, res) => {
+  const { id } = req.params;
+  console.log({id})
+  const { user_id } = req.query;
+  console.log({ user_id });
+  
+  try {
+    let hasBoughtTheCourse = false
+    if (mongoose.isValidObjectId(user_id)) {
+      const foundCourse = await Sale.exists({
+        course: id,
+        user: user_id,
+      });
+      hasBoughtTheCourse = !!foundCourse
     }
+    console.log({hasBoughtTheCourse})
+
+    const course = await Course.findById(id);
+    res
+      .status(200)
+      .json({
+        ok: true,
+        data: { ...course.toObject(), hasBoughtTheCourse},
+      });
+  } catch (error) {
+    console.log({ error });
+    res.status(400).json({ ok: false, error });
   }
-);
-
-
+});
 
 app.post('/courses', async (req, res) => {
   const { name } = req.body;
