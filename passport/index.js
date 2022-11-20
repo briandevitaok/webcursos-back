@@ -18,7 +18,7 @@ passport.use(
     { jwtFromRequest: jwtExtractor, secretOrKey: process.env.JWT_SECRET_KEY },
     async function (jwt_payload, done) {
       try {
-        const foundUser = await User.findOne({ _id: jwt_payload.sub});
+        const foundUser = await User.findOne({ id: jwt_payload.sub});
         done(null, foundUser);
       } catch (error) {
         done(error, null);
@@ -36,13 +36,15 @@ passport.use(
     },
     async function (accessToken, refreshToken, profile, cb) {
       try {
-        const foundUser = await User.findOne({ googleId: profile.id });
+        const foundUser = await User.findOne({googleId: profile._id});
 
-        console.log({ foundUser });
 
-        if (!!foundUser) {
+        console.log( `SEEE ACA, ${foundUser} `);
+
+        if (foundUser) {
           return cb(null, foundUser);
         } else {
+          console.log('ENTRAAAAAAAAA?')
           const createUser = await User.create({
             googleId: profile.id,
             firstname: profile._json.given_name,
@@ -50,7 +52,9 @@ passport.use(
             email: profile._json.email,
             pictureUrl: profile._json.picture,
           });
+          console.log(createUser.googleId)
           return cb(null, createUser);
+          
         }
       } catch (err) {
         console.log({ err });

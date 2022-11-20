@@ -18,4 +18,4 @@ const salesSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model('sales', salesSchema, 'sales');
+module.exports = mongoose.model('Sales', salesSchema, 'sales');

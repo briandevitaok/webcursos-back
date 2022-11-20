@@ -14,7 +14,7 @@ app.use(express.json());
 app.use(passport.initialize());
 app.use(
   require('express-session')({
-    secret: 'jsjsjsjskweesq',
+    secret: process.env.JWT_SECRET_KEY,
     resave: true,
     saveUninitialized: true,
   })
@@ -33,7 +33,7 @@ app.get(
   function (req, res) {
     const { _id, firstname, lastname, email, pictureUrl } = req.user;
     const userData = {
-      _id,
+      sub: _id,
       firstname,
       lastname,
       email,
@@ -91,9 +91,10 @@ app.get('/courses/:id', async (req, res) => {
 
 app.post('/courses', async (req, res) => {
   const { name } = req.body;
+  console.log({name})
   try {
     const result = await Course.create({ name });
-    res.status(200).json({ ok: true });
+    res.status(200).json({ ok: true, result });
   } catch (error) {
     console.log({ error });
     res.status(400).json({ ok: false, error });
